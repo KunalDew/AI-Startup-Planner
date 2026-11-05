@@ -1,0 +1,97 @@
+
+
+{
+  "name": "Market_Research_Agent",
+
+  "agents": [
+    "validator",
+    "market_researcher",
+    "product_architect",
+    "financial_strategist",
+    "gtm_specialist",
+    "executive_synthesizer"
+  ],
+
+  // Task definitions scheduled by the Flow in main.py
+  "tasks": [
+    {
+      // Task identifier
+      "name": "validation_task",
+
+      // What the task should accomplish
+      // Use {placeholder} inputs here; crewai run prompts for missing values
+      "description": "Evaluate the raw startup idea: \"{idea}\".\n1. Analyze the problem-solution fit. Is this a real pain point?\n2. Assess technical/physical feasibility, especially for hardware or deep-tech ideas.\n3. Use web search to check immediate market saturation. Are there identical dominant players?\nBase the decision on evidence where available, and distinguish facts from assumptions.",
+
+      // Clear definition of what the output should look like
+      "expected_output": "A strict evaluation containing a boolean \"is_viable\", a numeric \"score\" from 0 to 100, and a concise \"critique\" justifying the decision. Include the main evidence and assumptions in the critique.",
+
+      // Optional task guardrail(s) validate output before completion
+      // Use "guardrail" for one rule or "guardrails" for many
+      // Failed guardrails retry up to guardrail_max_retries times
+      // "guardrail": "Every factual claim needs context support.",
+      // "guardrails": [
+      //   "Every factual claim must be supported by context.",
+      //   "The answer must match the expected output format."
+      // ],
+      // "guardrail_max_retries": 2,
+
+      // Advanced task options:
+      // Docs: https://docs.crewai.com/concepts/tasks
+      // "type": "ConditionalTask",
+      // "condition": { "python": "my_project.conditions.should_run" },
+      // "output_json": { "python": "my_project.models.ReportOutput" },
+      // "output_pydantic": null,
+      // "response_model": null,
+      // "converter_cls": { "python": "my_project.converters.CustomConverter" },
+      // "markdown": false,
+      // "input_files": { "brief": "data/brief.txt" },
+      // "security_config": {},
+
+      // Which agent handles this task
+      "agent": "validator"
+
+      // "tools": [],
+      // "human_input": false,
+      // "async_execution": false
+    },
+    {
+      "name": "market_research_task",
+      "description": "Based on the startup idea \"{idea}\" and the validator's notes:\n{validator_notes}\n1. Identify the top 3 direct or indirect competitors.\n2. Define the exact target user demographic.\n3. Calculate TAM (Total Addressable Market), SAM, and SOM. You MUST use web search to find data points.\nYou MUST provide explicit calculation methods (top-down or bottom-up) and source URLs for all numbers. Distinguish sourced facts from assumptions and estimates.",
+      "expected_output": "A comprehensive market report detailing demographics, the competitor landscape, and strictly sourced TAM/SAM/SOM figures with explicit calculation methods and source URLs.",
+      "agent": "market_researcher",
+      "context": ["validation_task"]
+    },
+    {
+      "name": "product_architecture_task",
+      "description": "Based on the validated startup idea \"{idea}\" and the validation report:\n{validator_notes}\n1. Define the core user journey from the first step to the desired outcome.\n2. Outline the Minimum Viable Product (MVP) feature list. Include only essential features, not nice-to-haves.\n3. Suggest a high-level technical stack for software or a material/engineering approach for hardware.",
+      "expected_output": "A lean MVP specification including core features, user journey steps, and technical recommendations.",
+      "agent": "product_architect",
+      "context": ["validation_task"]
+    },
+    {
+      "name": "financial_strategy_task",
+      "description": "Using the market research report below, formulate the financial strategy for \"{idea}\".\n{market_report}\n1. Propose a specific pricing model (for example, SaaS tiers or per-unit pricing).\n2. Estimate the initial capital required to build the MVP.\n3. Project baseline unit economics (cost to deliver versus price charged).\nShow the assumptions and calculation basis for estimates; do not present unknowns as facts.",
+      "expected_output": "A financial breakdown outlining pricing, startup capital requirements, and unit economics with clearly labeled assumptions.",
+      "agent": "financial_strategist",
+      "context": ["market_research_task"]
+    },
+    {
+      "name": "gtm_strategy_task",
+      "description": "Develop the launch strategy for \"{idea}\" using the market report and product scope below.\nMarket report:\n{market_report}\nProduct scope:\n{product_scope}\n1. Define the brand positioning statement.\n2. Identify the top 3 customer acquisition channels based on the target demographic.\n3. Outline a 30-day post-launch marketing plan to acquire the first cohort of users.\nKeep recommendations actionable and consistent with the MVP scope.",
+      "expected_output": "A Go-To-Market plan detailing positioning, acquisition channels, and immediate 30-day launch steps.",
+      "agent": "gtm_specialist",
+      "context": ["market_research_task", "product_architecture_task"]
+    },
+    {
+      "name": "synthesis_task",
+      "description": "Review the validation, market research, product architecture, financial strategy, and GTM reports below and compile them into a final, cohesive business plan for \"{idea}\".\nValidation:\n{validation_report}\nMarket research:\n{market_report}\nProduct architecture:\n{product_scope}\nFinancial strategy:\n{financial_report}\nGo-to-market:\n{gtm_report}\nEnsure financial assumptions align with market sizing and the GTM strategy aligns with the MVP. Preserve source URLs, clearly label assumptions, reconcile conflicting conclusions, and return valid JSON only.",
+      "expected_output": "A fully finalized, highly structured JSON output representing an investor-ready business plan.",
+      "agent": "executive_synthesizer",
+      "context": ["validation_task", "market_research_task", "product_architecture_task", "financial_strategy_task", "gtm_strategy_task"]
+    }
+
+  ],
+
+  // Enable verbose logging for the task crews
+  "verbose": true
+}

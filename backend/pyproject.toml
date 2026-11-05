@@ -1,0 +1,42 @@
+[project]
+name = "market_research_agent"
+version = "0.1.0"
+description = "Market_Research_Agent using crewAI"
+authors = [{ name = "Your Name", email = "you@example.com" }]
+requires-python = ">=3.10,<3.14"
+dependencies = [
+    "crewai[google-genai,tools]>=1.15.33,<2.0.0",
+    "fastapi>=0.162.0",
+    "json5>=0.10.0",
+    "psycopg2-binary>=2.9.13",
+    "psycopg[binary]>=3.3.7",
+    "pydantic>=2.12.5",
+    "python-dotenv>=1.2.4",
+    "sqlmodel>=0.0.48",
+    "uvicorn>=0.54.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project.scripts]
+kickoff = "flow:kickoff"
+run_crew = "flow:kickoff"
+plot = "flow:plot"
+
+[tool.hatch.build.targets.wheel]
+only-include = [
+    "main.py",
+    "flow.py",
+    "schemas.py",
+    "agents",
+    "crew.jsonc",
+    "tools",
+    "knowledge",
+    "skills",
+]
+
+[tool.crewai]
+type = "flow"
+project_id = "aa83494f-ff6a-422b-a27f-eccacbd0dbc6"
