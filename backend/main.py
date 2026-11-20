@@ -21,6 +21,8 @@ import asyncio
 import json
 from fastapi.responses import StreamingResponse
 
+from fastapi.middleware.cors import CORSMiddleware
+
 # --- Database Setup & Models ---
 load_dotenv(Path(__file__).resolve().parent / ".env")
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -57,10 +59,16 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Startup Report Generator API", lifespan=lifespan)
 
+cors_origins = [
+    origin.strip()
+    for origin in os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
+    if origin.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], 
-    allow_credentials=True,
+    allow_origins=cors_origins,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -191,3 +199,14 @@ async def stream_report_progress(job_id: str, session: Session = Depends(get_ses
             await asyncio.sleep(2)
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "ai-startup-planner-gold.vercel.app" # <-- Paste your exact Vercel URL here
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
